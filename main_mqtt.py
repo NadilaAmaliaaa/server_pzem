@@ -18,7 +18,7 @@ TOPIC_PZEM2 = "sensor/pzem2"
 TOPIC_PREDICT = "predict/pub"
 TOPIC_PREDICT_RESULT = "predict/result"
 
-DB_NAME = "rst.db"
+DB_NAME = "pzem.db"
 TARIF = 1444.7
 
 # -------------------- THREAD SAFETY --------------------
@@ -67,37 +67,37 @@ def save_sensor_data(table: str, data: dict):
                 now
             ))
             conn.commit()
+            print(f"✅ Data disimpan ke {table}: {data}")
         finally:
             conn.close()
 
 # --------------------- MACHINE LEARNING ----------------
-def load_model(path="predict.pkl"):
-    global MODEL
-    with MODEL_LOCK:
-        if MODEL is None:
-            if not os.path.exists(path):
-                raise FileNotFoundError(f"Model file not found: {path}")
-            print("⏳ Loading ML model from", path)
-            with open(path, "rb") as f:
-                MODEL = pickle.load(f)
-            print("✅ ML model loaded")
-    return MODEL
+# def load_model(path="predict.pkl"):
+#     global MODEL
+#     with MODEL_LOCK:
+#         if MODEL is None:
+#             if not os.path.exists(path):
+#                 raise FileNotFoundError(f"Model file not found: {path}")
+#             print("⏳ Loading ML model from", path)
+#             with open(path, "rb") as f:
+#                 MODEL = pickle.load(f)
+#             print("✅ ML model loaded")
+#     return MODEL
 
-def predict_biaya(data: dict):
-    model = load_model()  # thread-safe lazy load if not preloaded
-    try:
-        features = [[data['daya'], data['energi']]]
-        pred = model.predict(features)[0]
-        return float(pred)  # pastikan tipe serializable
-    except Exception as e:
-        print("❌ Gagal prediksi:", e)
-        return None
+# def predict_biaya(data: dict):
+#     model = load_model()  # thread-safe lazy load if not preloaded
+#     try:
+#         features = [[data['daya'], data['energi']]]
+#         pred = model.predict(features)[0]
+#         return float(pred)  # pastikan tipe serializable
+#     except Exception as e:
+#         print("❌ Gagal prediksi:", e)
+#         return None
 
 # ---------------------- MQTT HANDLER -------------------
 def handle_sensor_message(table: str, data: dict):
     try:
         save_sensor_data(table, data)
-        print(f"✅ Data disimpan ke {table}: {data}")
     except Exception as e:
         print("❌ Gagal simpan data sensor:", e)
 
@@ -132,6 +132,7 @@ def on_connect(client, userdata, flags, rc):
         print("❌ MQTT connect failed with rc:", rc)
 
 def on_message(client, userdata, msg):
+    print(f"✅ Data di on_message: {msg.topic}, {msg.payload}")
     try:
         payload = msg.payload.decode()
         data = json.loads(payload)
@@ -164,95 +165,151 @@ def start_mqtt(loop_forever=False):
             backoff = min(60, backoff * 2)
 
 # ------------------------ FLASK ROUTES ------------------------
-@app.route('/')
-def dashboard():
-    return render_template("index.html")
+# @app.route('/')
+# def dashboard():
+#     return render_template("index.html")
 
-@app.route('/dashboard')
-def dashboarddd():
-    return render_template("dashboard.html")
+# @app.route('/dashboard')
+# def dashboarddd():
+#     return render_template("dashboard.html")
 
-@app.route("/check_data")
-def check_data():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT tanggal, energi FROM panel1 ORDER BY tanggal DESC LIMIT 10")
-    rows = cur.fetchall()
-    conn.close()
-    return jsonify([dict(r) for r in rows])
+# @app.route("/check_data")
+# def check_data():
+#     conn = get_db_connection()
+#     cur = conn.cursor()
+#     cur.execute("SELECT tanggal, energi FROM panel1 ORDER BY tanggal DESC LIMIT 10")
+#     rows = cur.fetchall()
+#     conn.close()
+#     return jsonify([dict(r) for r in rows])
 
-@app.route("/get_hourly")
-def get_hourly():
-    conn = get_db_connection()
-    cur = conn.cursor()
+# @app.route("/get_hourly")
+# def get_hourly():
+#     conn = get_db_connection()
+#     cur = conn.cursor()
 
-    # Ambil label jam (pakai panel1 sebagai referensi waktu)
-    cur.execute("""
-        SELECT strftime('%H:%M', tanggal) as jam
-        FROM panel1
-        WHERE date(tanggal) = date('now')
-        GROUP BY jam
-        ORDER BY jam
-    """)
-    labels = [row["jam"] for row in cur.fetchall()]
+#     # Ambil label jam (pakai panel1 sebagai referensi waktu)
+#     cur.execute("""
+#         SELECT strftime('%H:%M', tanggal) as jam
+#         FROM panel1
+#         WHERE date(tanggal) = date('now')
+#         GROUP BY jam
+#         ORDER BY jam
+#     """)
+#     labels = [row["jam"] for row in cur.fetchall()]
 
-    def get_data(unit):
-        data = {}
-        for ruang, table in [("Ruang 1", "panel1"), ("Ruang 2", "panel2")]:
-            cur.execute(f"""
-                SELECT {unit}
-                FROM {table}
-                WHERE date(tanggal) = date('now')
-                ORDER BY tanggal
-            """)
-            data[ruang] = [row[0] for row in cur.fetchall()]
-        # Panel lain kosong
-        data["Ruang 3"] = []
-        data["Ruang 4"] = []
-        return data
+#     def get_data(unit):
+#         data = {}
+#         for ruang, table in [("Ruang 1", "panel1"), ("Ruang 2", "panel2")]:
+#             cur.execute(f"""
+#                 SELECT {unit}
+#                 FROM {table}
+#                 WHERE date(tanggal) = date('now')
+#                 ORDER BY tanggal
+#             """)
+#             data[ruang] = [row[0] for row in cur.fetchall()]
+#         # Panel lain kosong
+#         data["Ruang 3"] = []
+#         data["Ruang 4"] = []
+#         return data
 
-    response = {
-        "labels": labels,
-        "kWh": get_data("energi"),
-        "V": get_data("tegangan"),
-        "A": get_data("arus"),
-        "Hz": get_data("frekuensi")
-    }
+#     response = {
+#         "labels": labels,
+#         "kWh": get_data("energi"),
+#         "V": get_data("tegangan"),
+#         "A": get_data("arus"),
+#         "Hz": get_data("frekuensi")
+#     }
 
-    conn.close()
-    return jsonify(response)
+#     conn.close()
+#     return jsonify(response)
 
-@app.route("/get_totals")
-def get_totals():
-    conn = get_db_connection()
-    cur = conn.cursor()
+# @app.route("/get_totals")
+# def get_totals():
+#     conn = get_db_connection()
+#     cur = conn.cursor()
 
-    def panel_stats_monthly(table):
-        cur.execute(f"""
-            SELECT MIN(energi) as minv, MAX(energi) as maxv
-            FROM {table}
-            WHERE strftime('%Y-%m', tanggal) = strftime('%Y-%m', 'now')
-        """)
-        row = cur.fetchone()
-        return max(0.0, (row["maxv"] or 0) - (row["minv"] or 0))
+#     def panel_stats_monthly(table):
+#         cur.execute(f"""
+#             SELECT MIN(energi) as minv, MAX(energi) as maxv
+#             FROM {table}
+#             WHERE strftime('%Y-%m', tanggal) = strftime('%Y-%m', 'now')
+#         """)
+#         row = cur.fetchone()
+#         return max(0.0, (row["maxv"] or 0) - (row["minv"] or 0))
 
-    used1 = panel_stats_monthly("panel1")
-    used2 = panel_stats_monthly("panel2")
-    monthly_kwh = used1 + used2
-    monthly_cost = monthly_kwh * TARIF
+#     used1 = panel_stats_monthly("panel1")
+#     used2 = panel_stats_monthly("panel2")
+#     monthly_kwh = used1 + used2
+#     monthly_cost = monthly_kwh * TARIF
 
-    conn.close()
-    return jsonify({
-        "total_energi": round(monthly_kwh, 2),
-        "total_tagihan": round(monthly_cost, 0)
-    })
+#     conn.close()
+#     return jsonify({
+#         "total_energi": round(monthly_kwh, 2),
+#         "total_tagihan": round(monthly_cost, 0)
+#     })
+
+# @app.route("/get_hourly2")
+# def get_hourly2():
+#     conn = get_db_connection()
+#     cur = conn.cursor()
+
+#     # Ambil semua jam unik dari kedua panel (union, bukan hanya panel1)
+#     cur.execute("""
+#         SELECT jam FROM (
+#             SELECT strftime('%H:%M', tanggal) as jam FROM panel1 WHERE date(tanggal) = date('now')
+#             UNION
+#             SELECT strftime('%H:%M', tanggal) as jam FROM panel2 WHERE date(tanggal) = date('now')
+#         )
+#         GROUP BY jam
+#         ORDER BY jam
+#     """)
+#     labels = [row["jam"] for row in cur.fetchall()]
+
+#     def get_data(unit):
+#         data = {"Ruang 1": [], "Ruang 2": [], "Ruang 3": [], "Ruang 4": []}
+
+#         # Ambil data panel1 berdasarkan labels
+#         cur.execute(f"""
+#             SELECT strftime('%H:%M', tanggal) as jam, {unit}
+#             FROM panel1
+#             WHERE date(tanggal) = date('now')
+#         """)
+#         panel1_map = {row["jam"]: row[unit] for row in cur.fetchall()}
+
+#         # Ambil data panel2 berdasarkan labels
+#         cur.execute(f"""
+#             SELECT strftime('%H:%M', tanggal) as jam, {unit}
+#             FROM panel2
+#             WHERE date(tanggal) = date('now')
+#         """)
+#         panel2_map = {row["jam"]: row[unit] for row in cur.fetchall()}
+
+#         # Sinkronkan berdasarkan labels
+#         for jam in labels:
+#             data["Ruang 1"].append(panel1_map.get(jam, 0))  # jika tidak ada isi 0
+#             data["Ruang 2"].append(panel2_map.get(jam, 0))
+#             data["Ruang 3"].append(0)  # kosong
+#             data["Ruang 4"].append(0)  # kosong
+
+#         return data
+
+#     response = {
+#         "labels": labels,
+#         "kWh": get_data("energi"),
+#         "V": get_data("tegangan"),
+#         "A": get_data("arus"),
+#         "Hz": get_data("frekuensi")
+#     }
+
+#     conn.close()
+#     return jsonify(response)
 
 # ------------------------ MAIN STARTUP ------------------------
 if __name__ == '__main__':
     init_db()
-    try:
-        load_model("predict.pkl")
-    except Exception as e:
-        print("⚠️ Warning: Gagal load model pada startup:", e)
+    # try:
+    #     load_model("predict.pkl")
+    # except Exception as e:
+    #     print("⚠️ Warning: Gagal load model pada startup:", e)
     mqtt_client = start_mqtt(loop_forever=False)
     app.run(host="0.0.0.0", port=4000, debug=True, use_reloader=False)
