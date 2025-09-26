@@ -10,7 +10,7 @@ import os
 # ----------------------- CONFIG -----------------------
 app = Flask(__name__)
 
-BROKER = "192.168.57.66"
+BROKER = "192.168.56.226"
 PORT = 1883
 TOPIC_PZEM1 = "sensor/pzem1"
 TOPIC_PZEM2 = "sensor/pzem2"
@@ -40,7 +40,6 @@ def init_db():
     conn.close()
 
 def save_sensor_data(table: str, data: dict):
-    """Simpan data akumulasi ke DB. data wajib berisi: tegangan, arus, daya, energi, frekuensi, tanggal"""
     required = ('tegangan', 'arus', 'daya', 'energi', 'frekuensi', 'tanggal')
     if not all(k in data for k in required):
         raise ValueError("Data sensor tidak lengkap saat save_sensor_data")
@@ -68,39 +67,18 @@ def save_sensor_data(table: str, data: dict):
 agg_buffer = {}
 agg_lock = threading.Lock()
 
-def _now_minute(ts=None):
-    if ts is None:
-        ts = datetime.datetime.now()
-    return ts.replace(second=0, microsecond=0)
-
 def accumulate_sensor_data(table: str, data: dict):
-    """Akumulasi data sensor berdasarkan menit. Menyimpan sum untuk arus/daya/energi
-    dan menghitung rata-rata untuk tegangan/frekuensi saat flush."""
-    now_min = _now_minute()
-
+    """Akumulasi data sensor sampai di-flush worker"""
     with agg_lock:
-        # kalau buffer belum ada → buat baru
         if table not in agg_buffer:
             agg_buffer[table] = {
-                "minute": now_min,
                 "sums": {k: 0.0 for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi']},
                 "count": 0
             }
 
         buf = agg_buffer[table]
 
-        # kalau menit berganti, flush dulu buffer lama
-        if buf["minute"] < now_min:
-            flush_buffer(table)
-            # setelah flush, buat buffer baru untuk menit sekarang
-            agg_buffer[table] = {
-                "minute": now_min,
-                "sums": {k: 0.0 for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi']},
-                "count": 0
-            }
-            buf = agg_buffer[table]
-
-        # tambahkan data ke buffer
+        # Tambah ke buffer
         for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi']:
             try:
                 v = float(data.get(k, 0.0))
@@ -109,61 +87,50 @@ def accumulate_sensor_data(table: str, data: dict):
             buf['sums'][k] += v
         buf['count'] += 1
 
-        print(f"📊 Akumulasi sementara {table} @ {buf['minute']}: samples={buf['count']} sums={buf['sums']}")
+        print(f"📊 Akumulasi sementara {table}: samples={buf['count']} sums={buf['sums']}")
 
 def flush_buffer(table: str):
-    """Simpan buffer lama ke DB. Menghitung rata-rata untuk tegangan & frekuensi,
-    menjumlah (sum) untuk arus/daya/energi."""
     with agg_lock:
         if table not in agg_buffer:
             return
 
         buf = agg_buffer[table]
         count = buf.get('count', 0)
-        minute_ts = buf.get('minute', _now_minute())
 
         if count == 0:
-            print(f"♻️ Buffer {table} pada {minute_ts} kosong, skip flush.")
-            # biarkan buffer tetap ada, tunggu data baru
+            print(f"♻️ Buffer {table} kosong, skip flush.")
             return
 
         sums = buf['sums']
 
-        avg_tegangan = sums['tegangan']
-        avg_frekuensi = sums['frekuensi']
-        sum_arus = sums['arus']
-        sum_daya = sums['daya']
-        sum_energi = sums['energi']
-
         payload = {
-            "tegangan": avg_tegangan,
-            "arus": sum_arus,
-            "daya": sum_daya,
-            "energi": sum_energi,
-            "frekuensi": avg_frekuensi,
-            "tanggal": minute_ts.strftime("%Y-%m-%d %H:%M:%S")
+            "tegangan": round(sums['tegangan'] / count, 3),
+            "arus": round(sums['arus'], 3),
+            "daya": round(sums['daya'] / count, 3),
+            "energi": round(sums['energi'], 3),
+            "frekuensi": round(sums['frekuensi'] / count, 3),
+            "tanggal": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        try:
-            save_sensor_data(table, payload)
-            print(f"💾 Buffer {table} untuk menit {minute_ts} diflush ke DB (count={count}).")
-        except Exception as e:
-            print("❌ Gagal simpan hasil flush:", e)
+        # reset buffer
+        agg_buffer[table] = {
+            "sums": {k: 0.0 for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi']},
+            "count": 0
+        }
 
-        # hapus buffer lama, buffer baru dibuat lagi saat ada data baru masuk
-        del agg_buffer[table]
+    # 🔑 simpan ke DB di luar agg_lock
+    try:
+        save_sensor_data(table, payload)
+        print(f"💾 Buffer {table} diflush ke DB (count={count}).")
+    except Exception as e:
+        print("❌ Gagal simpan hasil flush:", e)
 
 # ---------------- BACKGROUND FLUSH THREAD ----------------
 def flush_worker(interval: int = 60):
-    """Thread untuk flush buffer setiap interval detik."""
     while True:
         time.sleep(interval)
-        # flush any existing buffers (use list to avoid runtime-dict-changes)
         for table in list(agg_buffer.keys()):
-            try:
-                flush_buffer(table)
-            except Exception as e:
-                print("❌ Error di flush_worker:", e)
+            flush_buffer(table)
 
 # ---------------------- MQTT HANDLER -------------------
 def handle_sensor_message(table: str, data: dict):
@@ -173,7 +140,6 @@ def handle_sensor_message(table: str, data: dict):
         print("❌ Gagal akumulasi data sensor:", e)
 
 def handle_predict_message(data: dict, client: mqtt.Client):
-    # placeholder jika mau pakai prediksi
     pass
 
 def handle_message(topic: str, data: dict, client: mqtt.Client):
@@ -212,7 +178,7 @@ def start_mqtt(loop_forever=False):
     while True:
         try:
             client.connect(BROKER, PORT, 60)
-            client.loop_start()  # non-blocking
+            client.loop_start()
             print("🔁 MQTT loop started")
             if loop_forever:
                 while True:
@@ -230,7 +196,6 @@ if __name__ == '__main__':
     init_db()
     mqtt_client = start_mqtt(loop_forever=False)
 
-    # Jalankan thread flush background (tiap 60 detik)
     threading.Thread(target=flush_worker, args=(60,), daemon=True).start()
 
     app.run(host="0.0.0.0", port=4000, debug=True, use_reloader=False)
