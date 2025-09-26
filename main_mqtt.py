@@ -1,6 +1,6 @@
 import threading
 import time
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, render_template
 import sqlite3
 import datetime
 import json
@@ -17,8 +17,14 @@ TOPIC_PZEM2 = "sensor/pzem2"
 TOPIC_PREDICT = "predict/pub"
 TOPIC_PREDICT_RESULT = "predict/result"
 
+# daftar semua topik sensor (kecuali predict)
+TOPICS = [TOPIC_PZEM1, TOPIC_PZEM2]
+
 DB_NAME = "sensor_data.db"
 TARIF = 1444.7
+
+# Menyimpan data terakhir dari setiap panel
+latest_data = {topic: None for topic in TOPICS}
 
 # -------------------- THREAD SAFETY --------------------
 db_write_lock = threading.Lock()
@@ -140,9 +146,13 @@ def handle_sensor_message(table: str, data: dict):
         print("❌ Gagal akumulasi data sensor:", e)
 
 def handle_predict_message(data: dict, client: mqtt.Client):
+    # bisa diisi logic prediksi
     pass
 
 def handle_message(topic: str, data: dict, client: mqtt.Client):
+    # update latest_data untuk realtime endpoint
+    latest_data[topic] = data
+
     if topic == TOPIC_PZEM1:
         handle_sensor_message("panel1", data)
     elif topic == TOPIC_PZEM2:
@@ -156,7 +166,8 @@ def handle_message(topic: str, data: dict, client: mqtt.Client):
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("✅ Connected to MQTT Broker (rc=0)")
-        client.subscribe([(TOPIC_PZEM1, 0), (TOPIC_PZEM2, 0), (TOPIC_PREDICT, 0)])
+        subs = [(t, 0) for t in TOPICS] + [(TOPIC_PREDICT, 0)]
+        client.subscribe(subs)
     else:
         print("❌ MQTT connect failed with rc:", rc)
 
@@ -165,6 +176,7 @@ def on_message(client, userdata, msg):
     try:
         payload = msg.payload.decode()
         data = json.loads(payload)
+        latest_data[msg.topic] = payload 
         handle_message(msg.topic, data, client)
     except Exception as e:
         print("❌ Error di on_message:", e)
@@ -190,6 +202,32 @@ def start_mqtt(loop_forever=False):
             print(f"🔁 Retry connect after {backoff}s")
             time.sleep(backoff)
             backoff = min(60, backoff * 2)
+
+# ------------------------ BACKEND DASHBOARD PUSAT ------------------------
+@app.route("/index")
+def index_page():
+    """Render halaman dashboard"""
+    return render_template("realtime_fetch.html")
+
+@app.route("/index/realtime", methods=["GET"])
+def get_realtime():
+    field = request.args.get("field")
+
+    data = {}
+    for idx, topic in enumerate(TOPICS, start=1):
+        panel_key = f"panel{idx}"
+        value = latest_data.get(topic)
+
+        if value:
+            if field and field in value:
+                data[panel_key] = {field: value.get(field)}
+            else:
+                data[panel_key] = value
+        else:
+            data[panel_key] = None
+
+    print("latest_data sekarang:", latest_data)
+    return jsonify(data)
 
 # ------------------------ MAIN STARTUP ------------------------
 if __name__ == '__main__':
