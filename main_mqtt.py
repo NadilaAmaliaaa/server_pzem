@@ -10,7 +10,7 @@ import os
 # ----------------------- CONFIG -----------------------
 app = Flask(__name__)
 
-BROKER = "192.168.56.226"
+BROKER = "192.168.57.207"
 PORT = 1883
 TOPIC_PZEM1 = "sensor/pzem1"
 TOPIC_PZEM2 = "sensor/pzem2"
@@ -204,6 +204,7 @@ def start_mqtt(loop_forever=False):
             backoff = min(60, backoff * 2)
 
 # ------------------------ BACKEND DASHBOARD PUSAT ------------------------
+# ======================== REALTIME DATA ========================
 @app.route("/index")
 def index_page():
     """Render halaman dashboard"""
@@ -226,8 +227,64 @@ def get_realtime():
         else:
             data[panel_key] = None
 
-    print("latest_data sekarang:", latest_data)
+    # print("latest_data sekarang:", latest_data)
     return jsonify(data)
+
+# ======================== LINE CHART ========================
+
+# ------------------------ QUERY HELPER ------------------------
+def query_db(query, args=(), one=False):
+    conn = sqlite3.connect(DB_NAME)  # ✅ pakai DB_NAME, bukan DB_PATH
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute(query, args)
+    rows = cur.fetchall()
+    conn.close()
+    return (rows[0] if rows else None) if one else rows
+
+
+# ------------------------ ENERGY USAGE API ------------------------
+TABLES = {
+    "Gedung Pusat": "panel1",
+    "Gedung Logam & Mesin": "panel2",
+    # kalau ada tabel lain tambahkan di sini
+    # "Gedung Elektronika": "panel3",
+    # "Gedung Otomotif": "panel4",
+    # dst...
+}
+
+@app.route("/index/energy-usage")
+def energy_usage():
+    datasets = []
+    labels = []
+
+    for building, table in TABLES.items():
+        rows = query_db(f"""
+            SELECT strftime('%H:%M', tanggal) as jam, energi
+            FROM {table} 
+            ORDER BY tanggal ASC
+            LIMIT 60
+        """)
+
+        usage = []
+        building_labels = []
+        for row in rows:
+            building_labels.append(row["jam"])
+            usage.append(row["energi"])
+
+        datasets.append({
+            "building": building,
+            "usage": usage
+        })
+
+        # gunakan label dari tabel pertama sebagai acuan
+        if not labels and building_labels:
+            labels = building_labels
+
+    return jsonify({
+        "labels": labels,
+        "datasets": datasets
+    })
 
 # ------------------------ MAIN STARTUP ------------------------
 if __name__ == '__main__':
