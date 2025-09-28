@@ -387,21 +387,15 @@
 
       .donut-section {
         display: flex;
-        justify-content: center; /* posisi horizontal tengah */
-        align-items: center; /* posisi vertical tengah */
-        gap: 30px; /* jarak antara chart dan legend */
-        /* supaya legend rapih kiri */
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
       }
 
       .donut-container {
         width: 200px;
         height: 200px;
         position: relative;
-      }
-
-      .donut-chart {
-        width: 100%;
-        height: 100%;
       }
 
       .legend {
@@ -422,28 +416,6 @@
         border-radius: 50%;
         margin-right: 8px;
         flex-shrink: 0;
-      }
-
-      .legend-dot.dot-1 {
-        background-color: #ffd700;
-      }
-      .legend-dot.dot-2 {
-        background-color: #00bfff;
-      }
-      .legend-dot.dot-3 {
-        background-color: #ff4444;
-      }
-      .legend-dot.dot-4 {
-        background-color: #00ffff;
-      }
-      .legend-dot.dot-5 {
-        background-color: #ff8800;
-      }
-      .legend-dot.dot-6 {
-        background-color: #00ff44;
-      }
-      .legend-dot.dot-7 {
-        background-color: #8b4513;
       }
 
       .chart-container {
@@ -579,6 +551,16 @@
         .toggle-option {
           font-size: 12px;
         }
+
+        .donut-section {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .donut-container {
+          width: 150px;
+          height: 150px;
+        }
       }
     </style>
   </head>
@@ -673,14 +655,12 @@
             <div class="voltage-grid">
               <div class="voltage-circle">
                 <div class="circle yellow">
-                  <!-- <span class="voltage-value">220 V</span> -->
                   <span class="voltage-value" id="panel1">-- V</span>
                 </div>
                 <p class="voltage-label">Gedung Pusat</p>
               </div>
               <div class="voltage-circle">
                 <div class="circle blue">
-                  <!-- <span class="voltage-value">220 V</span> -->
                   <span class="voltage-value" id="panel2">-- V</span>
                 </div>
                 <p class="voltage-label">Gedung Logam<br />& Mesin</p>
@@ -723,7 +703,6 @@
         </div>
 
         <!-- Stats Section -->
-
         <div class="stats-section">
           <div class="toggle-switch-container">
             <label class="toggle-switch">
@@ -753,116 +732,11 @@
 
           <div class="donut-section">
             <div class="donut-container">
-              <svg class="donut-chart" viewBox="0 0 42 42">
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke="#ffd700"
-                  stroke-width="3"
-                  stroke-dasharray="14.2857 85.7143"
-                  stroke-dashoffset="0"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke="#00bfff"
-                  stroke-width="3"
-                  stroke-dasharray="14.2857 85.7143"
-                  stroke-dashoffset="-14.2857"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke="#ff4444"
-                  stroke-width="3"
-                  stroke-dasharray="14.2857 85.7143"
-                  stroke-dashoffset="-28.5714"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke="#00ffff"
-                  stroke-width="3"
-                  stroke-dasharray="14.2857 85.7143"
-                  stroke-dashoffset="-42.8571"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke="#ff8800"
-                  stroke-width="3"
-                  stroke-dasharray="14.2857 85.7143"
-                  stroke-dashoffset="-57.1428"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke="#00ff44"
-                  stroke-width="3"
-                  stroke-dasharray="14.2857 85.7143"
-                  stroke-dashoffset="-71.4285"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke="#8b4513"
-                  stroke-width="3"
-                  stroke-dasharray="14.2857 85.7143"
-                  stroke-dashoffset="-85.7142"
-                  transform="rotate(-90 21 21)"
-                />
-              </svg>
+              <canvas id="pieChart"></canvas>
             </div>
 
-            <div class="legend">
-              <div class="legend-item">
-                <div class="legend-dot dot-1"></div>
-                <span>Gedung Pusat</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot dot-2"></div>
-                <span>Gedung Logam & Mesin</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot dot-3"></div>
-                <span>Gedung Elektronika</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot dot-4"></div>
-                <span>Gedung Otomotif</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot dot-5"></div>
-                <span>Gedung TI</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot dot-6"></div>
-                <span>Gedung Manajemen</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot dot-7"></div>
-                <span>Gedung Sipil</span>
-              </div>
+            <div class="legend" id="pieChartLegend">
+              <!-- Legend will be generated dynamically -->
             </div>
           </div>
         </div>
@@ -897,8 +771,122 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-      let currentField = "tegangan"; // default tab aktif
+      let currentField = "tegangan";
+      let pieChart;
+      let usageChart;
 
+      // Color scheme for buildings
+      const buildingColors = [
+        '#ffd700', // Yellow - Gedung Pusat
+        '#00bfff', // Blue - Gedung Logam & Mesin
+        '#ff4444', // Red - Gedung Elektronika
+        '#00ffff', // Cyan - Gedung Otomotif
+        '#ff8800', // Orange - Gedung TI
+        '#00ff44', // Green - Gedung Manajemen
+        '#8b4513'  // Brown - Gedung Sipil
+      ];
+
+      // ======================== PIE CHART ========================
+      async function fetchPieChartData() {
+        try {
+          const response = await fetch('/index/energy-pie');
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error('Error fetching pie chart data:', error);
+          return { labels: [], values: [] };
+        }
+      }
+
+      async function renderPieChart() {
+        const ctx = document.getElementById('pieChart').getContext('2d');
+        const data = await fetchPieChartData();
+        
+        pieChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: data.labels,
+            datasets: [{
+              data: data.values,
+              backgroundColor: buildingColors.slice(0, data.labels.length),
+              borderWidth: 2,
+              borderColor: '#fff',
+              hoverBorderWidth: 3,
+              hoverOffset: 10
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+              legend: {
+                display: false // We'll create custom legend
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = ((context.parsed * 100) / total).toFixed(1);
+                    return context.label + ': ' + context.parsed.toLocaleString() + ' kWh (' + percentage + '%)';
+                  }
+                }
+              }
+            },
+            animation: {
+              animateRotate: true,
+              duration: 1500
+            }
+          }
+        });
+
+        // Generate custom legend
+        generatePieChartLegend(data.labels, data.values);
+      }
+
+      function generatePieChartLegend(labels, values) {
+        const legendContainer = document.getElementById('pieChartLegend');
+        legendContainer.innerHTML = '';
+
+        const total = values.reduce((a, b) => a + b, 0);
+
+        labels.forEach((label, index) => {
+          const percentage = total > 0 ? ((values[index] * 100) / total).toFixed(1) : '0.0';
+          
+          const legendItem = document.createElement('div');
+          legendItem.className = 'legend-item';
+          legendItem.innerHTML = `
+            <div class="legend-dot" style="background-color: ${buildingColors[index]}"></div>
+            <span>${label}</span>
+          `;
+          
+          // Add click functionality to toggle chart segments
+          legendItem.style.cursor = 'pointer';
+          legendItem.addEventListener('click', () => {
+            const meta = pieChart.getDatasetMeta(0);
+            meta.data[index].hidden = !meta.data[index].hidden;
+            pieChart.update();
+          });
+
+          legendContainer.appendChild(legendItem);
+        });
+      }
+
+      async function updatePieChart() {
+        try {
+          const data = await fetchPieChartData();
+          pieChart.data.labels = data.labels;
+          pieChart.data.datasets[0].data = data.values;
+          pieChart.update('none');
+          
+          // Update legend
+          generatePieChartLegend(data.labels, data.values);
+        } catch (error) {
+          console.error('Error updating pie chart:', error);
+        }
+      }
+
+      // ======================== REALTIME DATA ========================
       async function fetchRealtime() {
         try {
           const res = await fetch(`/index/realtime?field=${currentField}`);
@@ -928,94 +916,30 @@
         }
       }
 
-      // ganti tab
-      function switchTab(el, field) {
-        currentField = field; // update field aktif
-        document
-          .querySelectorAll(".tab-item")
-          .forEach((t) => t.classList.remove("active"));
-        el.classList.add("active");
-        fetchRealtime(); // langsung fetch data sesuai tab
-      }
-
-      // refresh tiap 1 detik
-      setInterval(fetchRealtime, 1000);
-      fetchRealtime();
-
-      // Sidebar Toggle Function
-      function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-        const mainContent = document.getElementById("mainContent");
-
-        sidebar.classList.toggle("collapsed");
-        mainContent.classList.toggle("expanded");
-      }
-
-      // Tab Switching Functions
-      // function switchTab(element, tabType) {
-      //   // Remove active class from all tabs
-      //   document.querySelectorAll('.voltage-section .tab-item').forEach(tab => {
-      //     tab.classList.remove('active');
-      //   });
-      //   // Add active class to clicked tab
-      //   element.classList.add('active');
-
-      //   // Here you can add logic to show different content based on tabType
-      //   console.log('Switched to:', tabType);
-      // }
-
-      // Toggle Switch Handler
-      function handleToggleSwitch(toggle) {
-        const timeType = toggle.checked ? "bulan" : "minggu";
-        updateStatsData(timeType);
-
-        // Optional: Add some visual feedback
-        const container = toggle.closest(".toggle-switch");
-        container.style.transform = "scale(0.98)";
-        setTimeout(() => {
-          container.style.transform = "scale(1)";
-        }, 100);
-      }
-
-      function updateStatsData(timeType) {
-        // Update stats based on selected time period
-        const dayaElement = document.querySelector(
-          ".stat-card:first-child .stat-value"
-        );
-        const biayaElement = document.querySelector(
-          ".stat-card:last-child .stat-value"
-        );
-
-        if (timeType === "minggu") {
-          dayaElement.textContent = "7.852.000 kWh";
-          biayaElement.textContent = "IDR 7.852.000";
-        } else {
-          dayaElement.textContent = "31.408.000 kWh";
-          biayaElement.textContent = "IDR 31.408.000";
+      // ======================= LINE CHART ========================
+      async function fetchEnergyUsage() {
+        try {
+          const response = await fetch("/index/energy-usage");
+          const result = await response.json();
+          return result;
+        } catch (error) {
+          console.error('Error fetching energy usage:', error);
+          return { labels: [], datasets: [] };
         }
       }
 
-      // ======================= LINE CHART ========================
-      // Multi-line Chart for 7 Buildings
-      const ctx = document.getElementById("usageChart").getContext("2d");
-
-      // fungsi ambil data dari backend
-      async function fetchEnergyUsage() {
-        const response = await fetch("/index/energy-usage");
-        const result = await response.json();
-        return result; // { labels: [...], datasets: [{building, usage}, ...] }
-      }
-      async function renderChart() {
+      async function renderLineChart() {
+        const ctx = document.getElementById("usageChart").getContext("2d");
         const result = await fetchEnergyUsage();
 
-        const datasets = result.datasets.map((ds) => ({
+        const datasets = result.datasets.map((ds, index) => ({
           label: ds.building,
           data: ds.usage,
           borderWidth: 2,
           fill: false,
           tension: 0.3,
-          borderColor: getRandomColor(),
-          backgroundColor: getRandomColor(0.1),
+          borderColor: buildingColors[index] || getRandomColor(),
+          backgroundColor: (buildingColors[index] || getRandomColor()) + '20',
         }));
 
         usageChart = new Chart(ctx, {
@@ -1032,14 +956,14 @@
               legend: { display: true, position: "top" },
               tooltip: {
                 callbacks: {
-                  label: (context) => context.parsed.y + " kW",
+                  label: (context) => context.dataset.label + ': ' + context.parsed.y.toLocaleString() + " kW",
                 },
               },
             },
             scales: {
               y: {
                 ticks: {
-                  callback: (value) => value + " kW",
+                  callback: (value) => value.toLocaleString() + " kW",
                 },
               },
             },
@@ -1047,18 +971,21 @@
         });
       }
 
-      // fungsi update chart tiap interval
-      async function updateChart() {
-        const result = await fetchEnergyUsage();
-        usageChart.data.labels = result.labels;
+      async function updateLineChart() {
+        try {
+          const result = await fetchEnergyUsage();
+          usageChart.data.labels = result.labels;
 
-        result.datasets.forEach((ds, i) => {
-          if (usageChart.data.datasets[i]) {
-            usageChart.data.datasets[i].data = ds.usage;
-          }
-        });
+          result.datasets.forEach((ds, i) => {
+            if (usageChart.data.datasets[i]) {
+              usageChart.data.datasets[i].data = ds.usage;
+            }
+          });
 
-        usageChart.update("none");
+          usageChart.update("none");
+        } catch (error) {
+          console.error('Error updating line chart:', error);
+        }
       }
 
       function getRandomColor(alpha = 1) {
@@ -1068,37 +995,73 @@
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
       }
 
-      renderChart();
+      // ======================== UTILITY FUNCTIONS ========================
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const mainContent = document.getElementById("mainContent");
 
-      // auto update setiap 5 detik
-      setInterval(updateChart, 5000);
-      //===============================================================
+        sidebar.classList.toggle("collapsed");
+        mainContent.classList.toggle("expanded");
+      }
 
-      // Responsive behavior
-      window.addEventListener("resize", function () {
+      function switchTab(element, tabType) {
+        currentField = tabType;
+        document
+          .querySelectorAll(".tab-item")
+          .forEach((t) => t.classList.remove("active"));
+        element.classList.add("active");
+        fetchRealtime();
+      }
+
+      function handleToggleSwitch(toggle) {
+        const timeType = toggle.checked ? "bulan" : "minggu";
+        updateStatsData(timeType);
+
+        const container = toggle.closest(".toggle-switch");
+        container.style.transform = "scale(0.98)";
+        setTimeout(() => {
+          container.style.transform = "scale(1)";
+        }, 100);
+      }
+
+      function updateStatsData(timeType) {
+        const dayaElement = document.querySelector(
+          ".stat-card:first-child .stat-value"
+        );
+        const biayaElement = document.querySelector(
+          ".stat-card:last-child .stat-value"
+        );
+
+        if (timeType === "minggu") {
+          dayaElement.textContent = "7.852.000 kWh";
+          biayaElement.textContent = "IDR 7.852.000";
+        } else {
+          dayaElement.textContent = "31.408.000 kWh";
+          biayaElement.textContent = "IDR 31.408.000";
+        }
+      }
+
+      // ======================== INITIALIZATION ========================
+      document.addEventListener("DOMContentLoaded", function() {
+        // Initialize charts
+        renderPieChart();
+        renderLineChart();
+        
+        // Start data fetching
+        fetchRealtime();
+        
+        // Set up intervals for real-time updates
+        setInterval(fetchRealtime, 1000);
+        setInterval(updateLineChart, 5000);
+        setInterval(updatePieChart, 10000); // Update pie chart every 10 seconds
+        
+        // Initialize responsive state
         if (window.innerWidth <= 768) {
           document.getElementById("sidebar").classList.add("collapsed");
           document.getElementById("mainContent").classList.add("expanded");
         }
-      });
 
-      // Initialize responsive state
-      if (window.innerWidth <= 768) {
-        document.getElementById("sidebar").classList.add("collapsed");
-        document.getElementById("mainContent").classList.add("expanded");
-      }
-
-      // Add smooth scrolling for navigation links
-      document.querySelectorAll(".nav-link").forEach((link) => {
-        link.addEventListener("click", function (e) {
-          if (this.getAttribute("href") === "#") {
-            e.preventDefault();
-          }
-        });
-      });
-
-      // Add loading animation for voltage circles
-      document.addEventListener("DOMContentLoaded", function () {
+        // Add loading animation for voltage circles
         const circles = document.querySelectorAll(".circle");
         circles.forEach((circle, index) => {
           setTimeout(() => {
@@ -1111,6 +1074,23 @@
               circle.style.transform = "scale(1)";
             }, 100);
           }, index * 100);
+        });
+      });
+
+      // ======================== EVENT LISTENERS ========================
+      window.addEventListener("resize", function () {
+        if (window.innerWidth <= 768) {
+          document.getElementById("sidebar").classList.add("collapsed");
+          document.getElementById("mainContent").classList.add("expanded");
+        }
+      });
+
+      // Add smooth scrolling for navigation links
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", function (e) {
+          if (this.getAttribute("href") === "#") {
+            e.preventDefault();
+          }
         });
       });
     </script>
