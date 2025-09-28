@@ -287,44 +287,105 @@ def energy_usage():
     })
 
 # ======================== PIE CHART ========================
-def query_db(query, args=(), one=False):
-    conn = sqlite3.connect(DB_NAME)  # ✅ pakai DB_NAME, bukan DB_PATH
-    conn.row_factory = sqlite3.Row
-    cur = conn.cursor()
-    cur.execute(query, args)
-    rows = cur.fetchall()
-    conn.close()
-    return (rows[0] if rows else None) if one else rows
-# ------------------------ ENERGY PIE API ------------------------
-GEDUNG = {
-    "Gedung Pusat": "panel1",
-    "Gedung Logam & Mesin": "panel2",
-    # "Gedung Elektronika": "panel3",
-    # "Gedung Otomotif": "panel4",
-    # "Gedung TI": "panel5",
-    # "Gedung Manajemen": "panel6",
-    # "Gedung Sipil": "panel7",
-}
-
+from datetime import datetime, timedelta
 
 @app.route("/index/energy-pie")
 def energy_pie():
+    # Get time period from query parameter (minggu/bulan)
+    period = request.args.get('period', 'minggu')  # default to minggu
+    
+    # Calculate date range based on period
+    end_date = datetime.now()
+    if period == 'minggu':
+        start_date = end_date - timedelta(days=7)
+        period_label = "Minggu Ini"
+    else:  # bulan
+        start_date = end_date - timedelta(days=30)
+        period_label = "Bulan Ini"
+    
+    # Format dates for SQL query
+    start_date_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
+    end_date_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
+    
     labels = []
     values = []
+    total_energy = 0
 
-    for building, table in GEDUNG.items():
-        row = query_db(f"""
-            SELECT SUM(energi) as total
-            FROM {table}
-        """, one=True)
+    for building, table in TABLES.items():
+        try:
+            # Query with date range filter
+            row = query_db(f"""
+                SELECT SUM(energi) as total
+                FROM {table}
+                WHERE tanggal >= ? AND tanggal <= ?
+            """, (start_date_str, end_date_str), one=True)
 
-        total = row["total"] if row and row["total"] is not None else 0
-        labels.append(building)
-        values.append(total)
+            total = row["total"] if row and row["total"] is not None else 0
+            labels.append(building)
+            values.append(round(total, 2))  # Round to 2 decimal places
+            total_energy += total
+            
+        except Exception as e:
+            print(f"Error querying {table}: {e}")
+            labels.append(building)
+            values.append(0)
 
     return jsonify({
         "labels": labels,
-        "values": values
+        "values": values,
+        "period": period,
+        "period_label": period_label,
+        "total_energy": round(total_energy, 2),
+        "start_date": start_date_str,
+        "end_date": end_date_str
+    })
+
+# Optional: Update stats endpoint to also support time periods
+@app.route("/index/stats")
+def get_stats():
+    period = request.args.get('period', 'minggu')
+    
+    end_date = datetime.now()
+    if period == 'minggu':
+        start_date = end_date - timedelta(days=7)
+        multiplier = 1
+    else:  # bulan
+        start_date = end_date - timedelta(days=30)
+        multiplier = 4.3  # Approximate weeks in a month
+    
+    start_date_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
+    end_date_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
+    
+    total_energy = 0
+    total_cost = 0
+    
+    # Calculate total across all buildings
+    for building, table in TABLES.items():
+        try:
+            row = query_db(f"""
+                SELECT SUM(energi) as energy, SUM(daya) as power
+                FROM {table}
+                WHERE tanggal >= ? AND tanggal <= ?
+            """, (start_date_str, end_date_str), one=True)
+            
+            if row and row["energy"]:
+                total_energy += row["energy"]
+                
+        except Exception as e:
+            print(f"Error querying stats from {table}: {e}")
+    
+    # Calculate cost (assuming 1500 IDR per kWh)
+    cost_per_kwh = 1500
+    total_cost = total_energy * cost_per_kwh
+    
+    return jsonify({
+        "period": period,
+        "total_energy": round(total_energy, 2),
+        "total_cost": round(total_cost, 0),
+        "energy_formatted": f"{total_energy:,.0f} kWh",
+        "cost_formatted": f"IDR {total_cost:,.0f}",
+        "start_date": start_date_str,
+        "end_date": end_date_str
     })
 
 # ------------------------ MAIN STARTUP ------------------------
