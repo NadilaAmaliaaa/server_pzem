@@ -10,7 +10,7 @@ import os
 # ----------------------- CONFIG -----------------------
 app = Flask(__name__)
 
-BROKER = "192.168.57.207"
+BROKER = "192.168.1.9"
 PORT = 1883
 TOPIC_PZEM1 = "sensor/pzem1"
 TOPIC_PZEM2 = "sensor/pzem2"
@@ -284,6 +284,47 @@ def energy_usage():
     return jsonify({
         "labels": labels,
         "datasets": datasets
+    })
+
+# ======================== PIE CHART ========================
+def query_db(query, args=(), one=False):
+    conn = sqlite3.connect(DB_NAME)  # ✅ pakai DB_NAME, bukan DB_PATH
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute(query, args)
+    rows = cur.fetchall()
+    conn.close()
+    return (rows[0] if rows else None) if one else rows
+# ------------------------ ENERGY PIE API ------------------------
+GEDUNG = {
+    "Gedung Pusat": "panel1",
+    "Gedung Logam & Mesin": "panel2",
+    # "Gedung Elektronika": "panel3",
+    # "Gedung Otomotif": "panel4",
+    # "Gedung TI": "panel5",
+    # "Gedung Manajemen": "panel6",
+    # "Gedung Sipil": "panel7",
+}
+
+
+@app.route("/index/energy-pie")
+def energy_pie():
+    labels = []
+    values = []
+
+    for building, table in GEDUNG.items():
+        row = query_db(f"""
+            SELECT SUM(energi) as total
+            FROM {table}
+        """, one=True)
+
+        total = row["total"] if row and row["total"] is not None else 0
+        labels.append(building)
+        values.append(total)
+
+    return jsonify({
+        "labels": labels,
+        "values": values
     })
 
 # ------------------------ MAIN STARTUP ------------------------
