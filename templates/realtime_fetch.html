@@ -722,11 +722,11 @@
           <div class="stats-cards">
             <div class="stat-card">
               <p class="stat-title">Daya</p>
-              <p class="stat-value">7.852.000 kWh</p>
+              <p class="stat-value">-- kWh</p>
             </div>
             <div class="stat-card">
               <p class="stat-title">Total Biaya</p>
-              <p class="stat-value">IDR 7.852.000</p>
+              <p class="stat-value">IDR --</p>
             </div>
           </div>
 
@@ -777,67 +777,81 @@
 
       // Color scheme for buildings
       const buildingColors = [
-        '#ffd700', // Yellow - Gedung Pusat
-        '#00bfff', // Blue - Gedung Logam & Mesin
-        '#ff4444', // Red - Gedung Elektronika
-        '#00ffff', // Cyan - Gedung Otomotif
-        '#ff8800', // Orange - Gedung TI
-        '#00ff44', // Green - Gedung Manajemen
-        '#8b4513'  // Brown - Gedung Sipil
+        "#ffd700", // Yellow - Gedung Pusat
+        "#00bfff", // Blue - Gedung Logam & Mesin
+        "#ff4444", // Red - Gedung Elektronika
+        "#00ffff", // Cyan - Gedung Otomotif
+        "#ff8800", // Orange - Gedung TI
+        "#00ff44", // Green - Gedung Manajemen
+        "#8b4513", // Brown - Gedung Sipil
       ];
 
       // ======================== PIE CHART ========================
       async function fetchPieChartData() {
         try {
-          const response = await fetch('/index/energy-pie');
+          const response = await fetch("/index/energy-pie");
           const data = await response.json();
           return data;
         } catch (error) {
-          console.error('Error fetching pie chart data:', error);
+          console.error("Error fetching pie chart data:", error);
           return { labels: [], values: [] };
         }
       }
 
       async function renderPieChart() {
-        const ctx = document.getElementById('pieChart').getContext('2d');
+        const ctx = document.getElementById("pieChart").getContext("2d");
         const data = await fetchPieChartData();
-        
+
         pieChart = new Chart(ctx, {
-          type: 'doughnut',
+          type: "doughnut",
           data: {
             labels: data.labels,
-            datasets: [{
-              data: data.values,
-              backgroundColor: buildingColors.slice(0, data.labels.length),
-              borderWidth: 2,
-              borderColor: '#fff',
-              hoverBorderWidth: 3,
-              hoverOffset: 10
-            }]
+            datasets: [
+              {
+                data: data.values,
+                backgroundColor: buildingColors.slice(0, data.labels.length),
+                borderWidth: 2,
+                borderColor: "#fff",
+                hoverBorderWidth: 3,
+                hoverOffset: 10,
+              },
+            ],
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '60%',
+            cutout: "60%",
             plugins: {
               legend: {
-                display: false // We'll create custom legend
+                display: false, // We'll create custom legend
               },
               tooltip: {
                 callbacks: {
-                  label: function(context) {
-                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                    const percentage = ((context.parsed * 100) / total).toFixed(1);
-                    return context.label + ': ' + context.parsed.toLocaleString() + ' kWh (' + percentage + '%)';
-                  }
-                }
-              }
+                  label: function (context) {
+                    const total = context.dataset.data.reduce(
+                      (a, b) => a + b,
+                      0
+                    );
+                    const percentage = ((context.parsed * 100) / total).toFixed(
+                      1
+                    );
+                    return (
+                      context.label +
+                      ": " +
+                      context.parsed.toLocaleString() +
+                      " kWh (" +
+                      percentage +
+                      "%)"
+                    );
+                  },
+                },
+              },
             },
             animation: {
               animateRotate: true,
-              duration: 1500
-            }
-          }
+              duration: 1500,
+            },
+          },
         });
 
         // Generate custom legend
@@ -845,24 +859,25 @@
       }
 
       function generatePieChartLegend(labels, values) {
-        const legendContainer = document.getElementById('pieChartLegend');
-        legendContainer.innerHTML = '';
+        const legendContainer = document.getElementById("pieChartLegend");
+        legendContainer.innerHTML = "";
 
         const total = values.reduce((a, b) => a + b, 0);
 
         labels.forEach((label, index) => {
-          const percentage = total > 0 ? ((values[index] * 100) / total).toFixed(1) : '0.0';
-          
-          const legendItem = document.createElement('div');
-          legendItem.className = 'legend-item';
+          const percentage =
+            total > 0 ? ((values[index] * 100) / total).toFixed(1) : "0.0";
+
+          const legendItem = document.createElement("div");
+          legendItem.className = "legend-item";
           legendItem.innerHTML = `
             <div class="legend-dot" style="background-color: ${buildingColors[index]}"></div>
             <span>${label}</span>
           `;
-          
+
           // Add click functionality to toggle chart segments
-          legendItem.style.cursor = 'pointer';
-          legendItem.addEventListener('click', () => {
+          legendItem.style.cursor = "pointer";
+          legendItem.addEventListener("click", () => {
             const meta = pieChart.getDatasetMeta(0);
             meta.data[index].hidden = !meta.data[index].hidden;
             pieChart.update();
@@ -877,12 +892,12 @@
           const data = await fetchPieChartData();
           pieChart.data.labels = data.labels;
           pieChart.data.datasets[0].data = data.values;
-          pieChart.update('none');
-          
+          pieChart.update("none");
+
           // Update legend
           generatePieChartLegend(data.labels, data.values);
         } catch (error) {
-          console.error('Error updating pie chart:', error);
+          console.error("Error updating pie chart:", error);
         }
       }
 
@@ -923,7 +938,7 @@
           const result = await response.json();
           return result;
         } catch (error) {
-          console.error('Error fetching energy usage:', error);
+          console.error("Error fetching energy usage:", error);
           return { labels: [], datasets: [] };
         }
       }
@@ -939,7 +954,7 @@
           fill: false,
           tension: 0.3,
           borderColor: buildingColors[index] || getRandomColor(),
-          backgroundColor: (buildingColors[index] || getRandomColor()) + '20',
+          backgroundColor: (buildingColors[index] || getRandomColor()) + "20",
         }));
 
         usageChart = new Chart(ctx, {
@@ -956,7 +971,11 @@
               legend: { display: true, position: "top" },
               tooltip: {
                 callbacks: {
-                  label: (context) => context.dataset.label + ': ' + context.parsed.y.toLocaleString() + " kW",
+                  label: (context) =>
+                    context.dataset.label +
+                    ": " +
+                    context.parsed.y.toLocaleString() +
+                    " kW",
                 },
               },
             },
@@ -984,7 +1003,7 @@
 
           usageChart.update("none");
         } catch (error) {
-          console.error('Error updating line chart:', error);
+          console.error("Error updating line chart:", error);
         }
       }
 
@@ -1006,10 +1025,16 @@
 
       function switchTab(element, tabType) {
         currentField = tabType;
-        document
-          .querySelectorAll(".tab-item")
-          .forEach((t) => t.classList.remove("active"));
+
+        // Hapus class active dari semua tab
+        document.querySelectorAll(".tab-item").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Tambahkan class active ke tab yang diklik
         element.classList.add("active");
+
+        // Update data realtime sesuai tab baru
         fetchRealtime();
       }
 
@@ -1027,12 +1052,18 @@
       //========================= FETCH STATS ========================
       async function fetchStats() {
         try {
-          const response = await fetch('/index/stats');
+          const response = await fetch("/index/stats");
           const data = await response.json();
           return data;
         } catch (error) {
-          console.error('Error fetching stats:', error);
-          return { period: 'minggu', total_energy: 0, total_cost: 0, energy_formatted: '0.0 kWh', cost_formatted: 'IDR 0.0' };
+          console.error("Error fetching stats:", error);
+          return {
+            period: "minggu",
+            total_energy: 0,
+            total_cost: 0,
+            energy_formatted: "0.0 kWh",
+            cost_formatted: "IDR 0.0",
+          };
         }
       }
 
@@ -1048,9 +1079,8 @@
           );
 
           // pakai data langsung dari backend
-          dayaElement.textContent = data.energy_formatted; 
+          dayaElement.textContent = data.energy_formatted;
           biayaElement.textContent = data.cost_formatted;
-
         } catch (error) {
           console.error("❌ Error update stats:", error);
 
@@ -1067,19 +1097,19 @@
       }
 
       // ======================== INITIALIZATION ========================
-      document.addEventListener("DOMContentLoaded", function() {
+      document.addEventListener("DOMContentLoaded", function () {
         // Initialize charts
         renderPieChart();
         renderLineChart();
-        
+
         // Start data fetching
         fetchRealtime();
-        
+
         // Set up intervals for real-time updates
         setInterval(fetchRealtime, 1000);
         setInterval(updateLineChart, 5000);
         setInterval(updatePieChart, 10000); // Update pie chart every 10 seconds
-        
+
         // Initialize responsive state
         if (window.innerWidth <= 768) {
           document.getElementById("sidebar").classList.add("collapsed");
