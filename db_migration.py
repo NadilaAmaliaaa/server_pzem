@@ -15,6 +15,7 @@ def migrate():
             daya REAL,
             energi REAL,
             frekuensi REAL,
+            biaya REAL,
             tanggal TEXT
         )
     """)
@@ -28,6 +29,7 @@ def migrate():
             daya REAL,
             energi REAL,
             frekuensi REAL,
+            biaya REAL,
             tanggal TEXT
         )
     """)

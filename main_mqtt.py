@@ -2,7 +2,8 @@ import threading
 import time
 from flask import Flask, jsonify, request, render_template
 import sqlite3
-import datetime
+# import datetime
+from datetime import datetime, timedelta
 import json
 import paho.mqtt.client as mqtt
 import os
@@ -10,7 +11,7 @@ import os
 # ----------------------- CONFIG -----------------------
 app = Flask(__name__)
 
-BROKER = "192.168.1.9"
+BROKER = "192.168.57.202"
 PORT = 1883
 TOPIC_PZEM1 = "sensor/pzem1"
 TOPIC_PZEM2 = "sensor/pzem2"
@@ -46,7 +47,7 @@ def init_db():
     conn.close()
 
 def save_sensor_data(table: str, data: dict):
-    required = ('tegangan', 'arus', 'daya', 'energi', 'frekuensi', 'tanggal')
+    required = ('tegangan', 'arus', 'daya', 'energi', 'frekuensi', 'biaya', 'tanggal')
     if not all(k in data for k in required):
         raise ValueError("Data sensor tidak lengkap saat save_sensor_data")
 
@@ -54,14 +55,15 @@ def save_sensor_data(table: str, data: dict):
         conn = get_db_connection()
         try:
             conn.execute(f"""
-                INSERT INTO {table} (tegangan, arus, daya, energi, frekuensi, tanggal) 
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO {table} (tegangan, arus, daya, energi, frekuensi, biaya, tanggal) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
                 round(data['tegangan'], 3),
                 round(data['arus'], 3),
                 round(data['daya'], 3),
-                round(data['energi'], 3),
+                round(data['energi'], 7),
                 round(data['frekuensi'], 3),
+                data['biaya'],
                 data['tanggal']
             ))
             conn.commit()
@@ -73,24 +75,47 @@ def save_sensor_data(table: str, data: dict):
 agg_buffer = {}
 agg_lock = threading.Lock()
 
+# Konstanta
+INTERVAL_SEC = 3
+TARIF_PER_KWH = 1500
+PPJ = 0.10  # 10%
+
 def accumulate_sensor_data(table: str, data: dict):
     """Akumulasi data sensor sampai di-flush worker"""
     with agg_lock:
         if table not in agg_buffer:
             agg_buffer[table] = {
-                "sums": {k: 0.0 for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi']},
+                "sums": {k: 0.0 for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi', 'biaya']},
                 "count": 0
             }
 
         buf = agg_buffer[table]
 
+        # Ambil nilai daya
+        try:
+            daya = float(data.get('daya', 0.0))
+        except Exception:
+            daya = 0.0
+
+        # Hitung energi berdasarkan interval (Wh)
+        energi_wh = daya * (INTERVAL_SEC / 3600.0)
+        energi_kwh = energi_wh / 1000.0
+
+        # Hitung biaya listrik (Rp)
+        biaya = energi_kwh * TARIF_PER_KWH * (1 + PPJ)
+
         # Tambah ke buffer
-        for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi']:
+        for k in ['tegangan', 'arus', 'daya', 'frekuensi']:
             try:
                 v = float(data.get(k, 0.0))
             except Exception:
                 v = 0.0
             buf['sums'][k] += v
+
+        # Tambahkan energi & biaya hasil hitung manual
+        buf['sums']['energi'] += energi_kwh
+        buf['sums']['biaya'] += biaya
+
         buf['count'] += 1
 
         print(f"📊 Akumulasi sementara {table}: samples={buf['count']} sums={buf['sums']}")
@@ -110,17 +135,18 @@ def flush_buffer(table: str):
         sums = buf['sums']
 
         payload = {
-            "tegangan": round(sums['tegangan'] / count, 3),
-            "arus": round(sums['arus'], 3),
-            "daya": round(sums['daya'] / count, 3),
-            "energi": round(sums['energi'], 3),
-            "frekuensi": round(sums['frekuensi'] / count, 3),
+            "tegangan": sums['tegangan'] / count,
+            "arus": sums['arus']/count,
+            "daya": sums['daya'],
+            "energi": sums['energi'],
+            "frekuensi": sums['frekuensi'] / count,
+            "biaya": sums['biaya'],
             "tanggal": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
         # reset buffer
         agg_buffer[table] = {
-            "sums": {k: 0.0 for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi']},
+            "sums": {k: 0.0 for k in ['tegangan', 'arus', 'daya', 'energi', 'frekuensi', 'biaya']},
             "count": 0
         }
 
@@ -205,7 +231,7 @@ def start_mqtt(loop_forever=False):
 
 # ------------------------ BACKEND DASHBOARD PUSAT ------------------------
 # ======================== REALTIME DATA ========================
-@app.route("/index")
+@app.route("/")
 def index_page():
     """Render halaman dashboard"""
     return render_template("realtime_fetch.html")
@@ -287,7 +313,6 @@ def energy_usage():
     })
 
 # ======================== PIE CHART ========================
-from datetime import datetime, timedelta
 
 @app.route("/index/energy-pie")
 def energy_pie():
@@ -322,7 +347,7 @@ def energy_pie():
 
             total = row["total"] if row and row["total"] is not None else 0
             labels.append(building)
-            values.append(round(total, 2))  # Round to 2 decimal places
+            values.append(total)  # Round to 2 decimal places
             total_energy += total
             
         except Exception as e:
@@ -335,7 +360,7 @@ def energy_pie():
         "values": values,
         "period": period,
         "period_label": period_label,
-        "total_energy": round(total_energy, 2),
+        "total_energy": total_energy,
         "start_date": start_date_str,
         "end_date": end_date_str
     })
@@ -380,10 +405,10 @@ def get_stats():
     
     return jsonify({
         "period": period,
-        "total_energy": round(total_energy, 2),
-        "total_cost": round(total_cost, 0),
-        "energy_formatted": f"{total_energy:,.0f} kWh",
-        "cost_formatted": f"IDR {total_cost:,.0f}",
+        "total_energy": total_energy,
+        "total_cost": total_cost,
+        "energy_formatted": f"{total_energy:,} kWh",
+        "cost_formatted": f"IDR {total_cost:,}",
         "start_date": start_date_str,
         "end_date": end_date_str
     })
