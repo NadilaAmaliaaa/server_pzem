@@ -84,7 +84,7 @@ def save_sensor_data(sensor_id: int, data: dict):
                 round(data['pf'], 3)
             ))
             conn.commit()
-            print(f"✅ Data disimpan untuk sensor_id {sensor_id}: {data}")
+            print(f"Data disimpan untuk sensor_id {sensor_id}: {data}")
         finally:
             conn.close()
 
@@ -127,7 +127,7 @@ def accumulate_sensor_data(sensor_id: int, data: dict):
         buf['sums']['biaya'] += biaya
         buf['count'] += 1
 
-        print(f"🔄 Akumulasi sementara sensor_id {sensor_id}: samples={buf['count']} sums={buf['sums']}")
+        print(f"Akumulasi sementara sensor_id {sensor_id}: samples={buf['count']} sums={buf['sums']}")
 
 def flush_buffer(sensor_id: int):
     """Flush buffer untuk sensor tertentu ke database"""
@@ -155,7 +155,7 @@ def flush_buffer(sensor_id: int):
         }
 
     save_sensor_data(sensor_id, payload)
-    print(f"💾 Buffer sensor_id {sensor_id} diflush ke DB (count={count}).")
+    print(f"Buffer sensor_id {sensor_id} diflush ke DB (count={count}).")
 
 def flush_worker(interval: int = 60):
     while True:
@@ -178,15 +178,15 @@ def handle_message(topic: str, data: dict, client: mqtt.Client):
     elif topic == TOPIC_PREDICT:
         pass
     else:
-        print("⚠️ Topik tidak dikenali:", topic)
+        print("Topik tidak dikenali:", topic)
 
 # ---------------------- MQTT CALLBACK ------------------
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("✅ Connected to MQTT Broker")
+        print("Connected to MQTT Broker")
         client.subscribe([(TOPIC_PATTERN, 0), (TOPIC_PREDICT, 0)])
     else:
-        print("❌ MQTT connect failed with rc:", rc)
+        print("MQTT connect failed with rc:", rc)
 
 def on_message(client, userdata, msg):
     try:
