@@ -67,7 +67,7 @@ def save_sensor_data(table: str, data: dict):
                 data['tanggal']
             ))
             conn.commit()
-            print(f"✅ Data disimpan ke {table}: {data}")
+            print(f"Data disimpan ke {table}: {data}")
         finally:
             conn.close()
 
@@ -118,7 +118,7 @@ def accumulate_sensor_data(table: str, data: dict):
 
         buf['count'] += 1
 
-        print(f"📊 Akumulasi sementara {table}: samples={buf['count']} sums={buf['sums']}")
+        print(f"Akumulasi sementara {table}: samples={buf['count']} sums={buf['sums']}")
 
 def flush_buffer(table: str):
     with agg_lock:
@@ -129,7 +129,7 @@ def flush_buffer(table: str):
         count = buf.get('count', 0)
 
         if count == 0:
-            print(f"♻️ Buffer {table} kosong, skip flush.")
+            print(f"Buffer {table} kosong, skip flush.")
             return
 
         sums = buf['sums']
@@ -153,9 +153,9 @@ def flush_buffer(table: str):
     # 🔑 simpan ke DB di luar agg_lock
     try:
         save_sensor_data(table, payload)
-        print(f"💾 Buffer {table} diflush ke DB (count={count}).")
+        print(f"Buffer {table} diflush ke DB (count={count}).")
     except Exception as e:
-        print("❌ Gagal simpan hasil flush:", e)
+        print("Gagal simpan hasil flush:", e)
 
 # ---------------- BACKGROUND FLUSH THREAD ----------------
 def flush_worker(interval: int = 60):
@@ -169,7 +169,7 @@ def handle_sensor_message(table: str, data: dict):
     try:
         accumulate_sensor_data(table, data)
     except Exception as e:
-        print("❌ Gagal akumulasi data sensor:", e)
+        print("Gagal akumulasi data sensor:", e)
 
 def handle_predict_message(data: dict, client: mqtt.Client):
     # bisa diisi logic prediksi
@@ -186,26 +186,26 @@ def handle_message(topic: str, data: dict, client: mqtt.Client):
     elif topic == TOPIC_PREDICT:
         handle_predict_message(data, client)
     else:
-        print("⚠️ Topik tidak dikenali:", topic)
+        print("Topik tidak dikenali:", topic)
 
 # ---------------------- MQTT CALLBACK ------------------
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("✅ Connected to MQTT Broker (rc=0)")
+        print("Connected to MQTT Broker (rc=0)")
         subs = [(t, 0) for t in TOPICS] + [(TOPIC_PREDICT, 0)]
         client.subscribe(subs)
     else:
-        print("❌ MQTT connect failed with rc:", rc)
+        print("MQTT connect failed with rc:", rc)
 
 def on_message(client, userdata, msg):
-    print(f"✅ Data di on_message: {msg.topic}, {msg.payload}")
+    print(f"Data di on_message: {msg.topic}, {msg.payload}")
     try:
         payload = msg.payload.decode()
         data = json.loads(payload)
         latest_data[msg.topic] = payload 
         handle_message(msg.topic, data, client)
     except Exception as e:
-        print("❌ Error di on_message:", e)
+        print("Error di on_message:", e)
 
 def start_mqtt(loop_forever=False):
     client = mqtt.Client()
@@ -217,15 +217,15 @@ def start_mqtt(loop_forever=False):
         try:
             client.connect(BROKER, PORT, 60)
             client.loop_start()
-            print("🔁 MQTT loop started")
+            print("MQTT loop started")
             if loop_forever:
                 while True:
                     time.sleep(1)
             else:
                 return client
         except Exception as e:
-            print("❌ Gagal connect ke MQTT broker:", e)
-            print(f"🔁 Retry connect after {backoff}s")
+            print("Gagal connect ke MQTT broker:", e)
+            print(f"Retry connect after {backoff}s")
             time.sleep(backoff)
             backoff = min(60, backoff * 2)
 
@@ -260,7 +260,7 @@ def get_realtime():
 
 # ------------------------ QUERY HELPER ------------------------
 def query_db(query, args=(), one=False):
-    conn = sqlite3.connect(DB_NAME)  # ✅ pakai DB_NAME, bukan DB_PATH
+    conn = sqlite3.connect(DB_NAME)  #pakai DB_NAME, bukan DB_PATH
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     cur.execute(query, args)
