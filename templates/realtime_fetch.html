@@ -655,13 +655,13 @@
             <div class="voltage-grid">
               <div class="voltage-circle">
                 <div class="circle yellow">
-                  <span class="voltage-value" id="panel1">-- V</span>
+                  <span class="voltage-value" id="departement-pusat">-- V</span>
                 </div>
                 <p class="voltage-label">Gedung Pusat</p>
               </div>
               <div class="voltage-circle">
                 <div class="circle blue">
-                  <span class="voltage-value" id="panel2">-- V</span>
+                  <span class="voltage-value" id="panel2">220 V</span>
                 </div>
                 <p class="voltage-label">Gedung Logam<br />& Mesin</p>
               </div>
@@ -904,30 +904,61 @@
       // ======================== REALTIME DATA ========================
       async function fetchRealtime() {
         try {
-          const res = await fetch(`/index/realtime?field=${currentField}`);
-          const data = await res.json();
+          const response = await fetch(`/index/realtime?field=${currentField}`);
+          const data = await response.json();
+          let statsHTML = "";
 
-          for (const panel in data) {
-            const value = data[panel] ? data[panel][currentField] : "--";
-            const el = document.getElementById(panel);
-            if (el) {
-              el.textContent =
-                value +
-                (currentField === "tegangan"
-                  ? " V"
-                  : currentField === "arus"
-                  ? " A"
-                  : currentField === "daya"
-                  ? " W"
-                  : currentField === "energi"
-                  ? " kWh"
-                  : currentField === "frekuensi"
-                  ? " Hz"
-                  : "");
+          Object.entries(data).forEach(([building, values]) => {
+            if (values) {
+              let val = values[currentField] ?? 0;
+              let displayVal = val;
+
+              // khusus energi supaya tidak jadi 0
+              if (currentField === "energi") {
+                if (val > 0 && val < 0.001) {
+                  displayVal = val.toExponential(6); // tampil scientific notation
+                } else {
+                  displayVal = val.toFixed(3); // tampil normal
+                }
+              } else {
+                displayVal = Number(val).toLocaleString();
+              }
+
+              // Tambahkan satuan sesuai field
+              let unit = "";
+              switch (currentField) {
+                case "daya":
+                  unit = "kW";
+                  break;
+                case "energi":
+                  unit = "kWh";
+                  break;
+                case "arus":
+                  unit = "A";
+                  break;
+                case "tegangan":
+                  unit = "V";
+                  break;
+                case "frekuensi":
+                  unit = "Hz";
+                  break;
+                default:
+                  unit = " ";
+              }
+              // Buat slug ID dari nama gedung
+              const id = building
+                .toLowerCase()
+                .replace(/\s+/g, "-")
+                .replace(/&/g, "dan");
+
+              const el = document.getElementById(id);
+              if (el) {
+                el.textContent = `${displayVal} ${unit}`;
+              }
             }
-          }
-        } catch (err) {
-          console.error("Gagal fetch data realtime:", err);
+          });
+        } catch (error) {
+          console.error("Error fetching realtime:", error);
         }
       }
 
