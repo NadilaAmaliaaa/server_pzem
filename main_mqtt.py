@@ -11,7 +11,7 @@ import os
 # ----------------------- CONFIG -----------------------
 app = Flask(__name__)
 
-BROKER = "192.168.57.202"
+BROKER = "10.1.1.55"
 PORT = 1883
 TOPIC_PZEM1 = "sensor/pzem1"
 TOPIC_PZEM2 = "sensor/pzem2"
@@ -420,4 +420,4 @@ if __name__ == '__main__':
 
     threading.Thread(target=flush_worker, args=(60,), daemon=True).start()
 
-    app.run(host="0.0.0.0", port=4000, debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=80, debug=True, use_reloader=False)
