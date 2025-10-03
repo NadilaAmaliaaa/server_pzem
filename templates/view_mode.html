@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Penggunaan Listrik BBPMPV BOE Malang</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
     <style>
         * {
             margin: 0;
@@ -76,13 +81,33 @@
             font-size: 12px;
         }
 
-        .icon-yellow { background: linear-gradient(135deg, #ffd700, #ffed4e); }
-        .icon-blue { background: linear-gradient(135deg, #4299e1, #667eea); }
-        .icon-cyan { background: linear-gradient(135deg, #0bc5ea, #00d4ff); }
-        .icon-orange { background: linear-gradient(135deg, #ff9500, #ffc107); }
-        .icon-green { background: linear-gradient(135deg, #48bb78, #68d391); }
-        .icon-red { background: linear-gradient(135deg, #f56565, #fc8181); }
-        .icon-brown { background: linear-gradient(135deg, #8b4513, #a0522d); }
+        .icon-yellow {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+        }
+
+        .icon-blue {
+            background: linear-gradient(135deg, #4299e1, #667eea);
+        }
+
+        .icon-cyan {
+            background: linear-gradient(135deg, #0bc5ea, #00d4ff);
+        }
+
+        .icon-orange {
+            background: linear-gradient(135deg, #ff9500, #ffc107);
+        }
+
+        .icon-green {
+            background: linear-gradient(135deg, #48bb78, #68d391);
+        }
+
+        .icon-red {
+            background: linear-gradient(135deg, #f56565, #fc8181);
+        }
+
+        .icon-brown {
+            background: linear-gradient(135deg, #8b4513, #a0522d);
+        }
 
         .card-title {
             font-size: 12px;
@@ -108,9 +133,17 @@
             flex-shrink: 0;
         }
 
-        .dot-red { background: #f56565; }
-        .dot-yellow { background: #ffd700; }
-        .dot-blue { background: #4299e1; }
+        .dot-red {
+            background: #f56565;
+        }
+
+        .dot-yellow {
+            background: #ffd700;
+        }
+
+        .dot-blue {
+            background: #4299e1;
+        }
 
         .phase-bars {
             display: flex;
@@ -124,10 +157,22 @@
             flex: 1;
         }
 
-        .bar-blue { background: #ADB2D4 }
-        .bar-yellow { background: #C7D9DD }
-        .bar-pink { background: #D5E5D5 }
-        .bar-purple { background: #EEF1DA }
+        .bar-blue {
+            background: #ADB2D4
+        }
+
+        .bar-yellow {
+            background: #C7D9DD
+        }
+
+        .bar-pink {
+            background: #D5E5D5
+        }
+
+        .bar-purple {
+            background: #EEF1DA
+        }
+
         /* .bar-blue { background: linear-gradient(135deg, #bee3f8, #90cdf4); }
         .bar-yellow { background: linear-gradient(135deg, #fef5e7, #fde68a); }
         .bar-pink { background: linear-gradient(135deg, #fbb6ce, #f687b3); }
@@ -213,7 +258,7 @@
             .grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .summary-card {
                 grid-column: 1 / -1;
                 grid-row: auto;
@@ -224,7 +269,7 @@
             .grid {
                 grid-template-columns: 1fr;
             }
-            
+
             h1 {
                 font-size: 16px;
             }
@@ -236,21 +281,24 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>MONITORING PENGGUNAAN LISTRIK BBPMPV BOE MALANG</h1>
-        
+
         <div class="grid">
             <!-- Card 1 - Yellow -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon icon-yellow">de</div>
-                    <div class="card-title">Departemen Elektronika</div>
+                    <div class="card-icon icon-yellow">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="card-title">Departemen Pusat</div>
                 </div>
                 <div class="phase-list">
                     <div class="phase-item">
                         <div class="phase-dot dot-red"></div>
-                        <span style="font-size: 13px; margin-right: 6px;">R</span>
+                        <span style="font-size: 13px; margin-right: 6px;">Fasa R</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -260,7 +308,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-yellow"></div>
-                        <span style="font-size: 13px; margin-right: 6px;">S</span>
+                        <span style="font-size: 13px; margin-right: 6px;">Fasa S</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -270,7 +318,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-blue"></div>
-                        <span style="font-size: 13px; margin-right: 6px;">T</span>
+                        <span style="font-size: 13px; margin-right: 6px;">Fasa T</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -294,13 +342,15 @@
             <!-- Card 2 - Blue -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon icon-blue">de</div>
-                    <div class="card-title">Departemen Elektronika</div>
+                    <div class="card-icon icon-blue">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="card-title">Departemen Logam & Mesin</div>
                 </div>
                 <div class="phase-list">
                     <div class="phase-item">
                         <div class="phase-dot dot-red"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 1</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa R</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -310,7 +360,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-yellow"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 2</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa S</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -320,7 +370,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-blue"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 3</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa T</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -344,13 +394,15 @@
             <!-- Card 3 - Red -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon icon-red">de</div>
+                    <div class="card-icon icon-red">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
                     <div class="card-title">Departemen Elektronika</div>
                 </div>
                 <div class="phase-list">
                     <div class="phase-item">
                         <div class="phase-dot dot-red"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 1</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa R</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -360,7 +412,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-yellow"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 2</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa S</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -370,7 +422,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-blue"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 3</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa T</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -394,13 +446,15 @@
             <!-- Card 4 - Cyan -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon icon-cyan">de</div>
-                    <div class="card-title">Departemen Elektronika</div>
+                    <div class="card-icon icon-cyan">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="card-title">Departemen Otomotif</div>
                 </div>
                 <div class="phase-list">
                     <div class="phase-item">
                         <div class="phase-dot dot-red"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 1</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa R</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -410,7 +464,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-yellow"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 2</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa S</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -420,7 +474,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-blue"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 3</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa T</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -444,13 +498,15 @@
             <!-- Card 5 - Orange -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon icon-orange">de</div>
-                    <div class="card-title">Departemen Elektronika</div>
+                    <div class="card-icon icon-orange">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="card-title">Departemen TI</div>
                 </div>
                 <div class="phase-list">
                     <div class="phase-item">
                         <div class="phase-dot dot-red"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 1</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa R</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -460,7 +516,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-yellow"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 2</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa S</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -470,7 +526,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-blue"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 3</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa T</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -494,13 +550,15 @@
             <!-- Card 6 - Green -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon icon-green">de</div>
-                    <div class="card-title">Departemen Elektronika</div>
+                    <div class="card-icon icon-green">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="card-title">Departemen Manajemen</div>
                 </div>
                 <div class="phase-list">
                     <div class="phase-item">
                         <div class="phase-dot dot-red"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 1</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa R</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -510,7 +568,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-yellow"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 2</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa S</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -520,7 +578,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-blue"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 3</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa T</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -544,13 +602,15 @@
             <!-- Card 7 - Brown -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon icon-brown">de</div>
-                    <div class="card-title">Departemen Elektronika</div>
+                    <div class="card-icon icon-brown">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="card-title">Departemen Sipil</div>
                 </div>
                 <div class="phase-list">
                     <div class="phase-item">
                         <div class="phase-dot dot-red"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 1</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa R</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -560,7 +620,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-yellow"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 2</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa S</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -570,7 +630,7 @@
                     </div>
                     <div class="phase-item">
                         <div class="phase-dot dot-blue"></div>
-                        <span style="font-size: 13px; margin-right: 8px;">Fasa 3</span>
+                        <span style="font-size: 13px; margin-right: 8px;">Fasa T</span>
                         <div class="phase-bars">
                             <div class="bar bar-blue"></div>
                             <div class="bar bar-yellow"></div>
@@ -608,4 +668,5 @@
         </div>
     </div>
 </body>
+
 </html>
