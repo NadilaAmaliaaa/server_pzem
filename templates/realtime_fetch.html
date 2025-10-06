@@ -904,7 +904,7 @@
       // ======================== REALTIME DATA ========================
       async function fetchRealtime() {
         try {
-          const response = await fetch(`/index/realtime?field=${currentField}`);
+          const response = await fetch(`/dashboard-admin?field=${currentField}`);
           const data = await response.json();
           let statsHTML = "";
 
