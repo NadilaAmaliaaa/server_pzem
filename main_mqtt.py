@@ -235,11 +235,96 @@ def get_buildings_with_sensors():
 @app.route("/")
 def index_page():
     """Render halaman dashboard"""
+    return render_template("view_mode.html")
+
+@app.route("/realtime")
+def get_realtime():
+
+    now = datetime.now()
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = datetime.now()
+
+    buildings_data = get_buildings_with_sensors()
+    departments = []
+
+    total_energy_all = 0.0
+    total_cost_all = 0.0
+
+    for building_name, info in buildings_data.items():
+        phases = {}
+        total_energy = 0.0
+        total_cost = 0.0
+
+        for sensor in info['sensors']:
+            topic = f"sensor/{info['building_code']}/{sensor['sensor_name']}"
+            sensor_data = latest_data.get(topic)
+
+            # Set fase berdasarkan nama sensor (misal pzem_r, pzem_s, pzem_t)
+            phase_key = sensor['sensor_name'][-1].lower() if sensor['sensor_name'][-1].lower() in ['r', 's', 't'] else sensor['sensor_name']
+
+            # Default nilai kalau belum ada data MQTT
+            if not sensor_data:
+                sensor_data = {"voltage": 0, "current": 0, "power": 0, "energy": 0}
+
+            # ambil data realtime
+            phases[phase_key] = {
+                "voltage": float(sensor_data.get("tegangan", 0.0)),
+                "current": float(sensor_data.get("arus", 0.0)),
+                "power": float(sensor_data.get("daya", 0.0)),
+                "energy": float(sensor_data.get("energi", 0.0))
+            }
+
+            # ambil data harian dari DB
+            row = query_db("""
+                SELECT 
+                    SUM(energy) as total_energy,
+                    SUM(cost) as total_cost
+                FROM sensor_readings
+                WHERE sensor_id = ?
+                AND timestamp >= ? AND timestamp <= ?
+            """, (sensor['sensor_id'], today_start.strftime("%Y-%m-%d %H:%M:%S"), today_end.strftime("%Y-%m-%d %H:%M:%S")), one=True)
+
+            if row:
+                total_energy += row["total_energy"] or 0
+                total_cost += row["total_cost"] or 0
+
+        # tambahkan total departemen
+        departments.append({
+            "id": info['building_code'],
+            "name": building_name,
+            "phases": phases,
+            "total": {
+                "total_energy": total_energy,
+                "total_cost": total_cost
+            }
+        })
+
+        total_energy_all += total_energy
+        total_cost_all += total_cost
+
+    # ringkasan bulan berjalan
+    summary = {
+        "overall_energy": round(total_energy_all, 1),
+        "overall_cost": round(total_cost_all, 0),
+        "month": now.strftime("%B"),   # nama bulan (Oktober)
+        "year": now.year
+    }
+
+    return jsonify({
+        "success": True,
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "departments": departments,
+        "summary": summary
+    })
+
+# ------------------------ DASHBOARD ADMIN API ------------------------
+@app.route("/admin")
+def admin_page():
+    """Render halaman dashboard"""
     return render_template("realtime_fetch.html")
 
-# ------------------------ REALTIME API ------------------------
-@app.route("/index/realtime", methods=["GET"])
-def get_realtime():
+@app.route("/dashboard-admin", methods=["GET"])
+def get_dashboard():
     """
     Realtime data rata-rata sensor per gedung.
     Ambil dari latest_data yang diupdate MQTT, kelompokkan berdasarkan building_code.
