@@ -108,7 +108,7 @@ h1 {
 }
 
 .card-title {
-  font-size: 12px;
+  font-size: 15px;
   margin-top: 5px;
   font-weight: 600;
   color: #2d3748;
@@ -137,17 +137,18 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 11px;
 }
 
 .bar {
   flex: 1;
-  height: 16px;
+  height: 4vh;
   border-radius: 5px;
   font-weight: 550;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .bar-blue {
@@ -194,7 +195,7 @@ h1 {
   color: white;
   padding: 5px 10px;
   border-radius: 15px;
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 600;
   flex: 1;
   justify-content: center;
@@ -207,7 +208,7 @@ h1 {
 }
 
 .summary-card {
-  background: linear-gradient(135deg, #adc4c9 0%, #123458 100%);
+  background: linear-gradient(135deg, #889a9e 0%, #123458 100%);
   /* background: #123458; */
   color: white;
   grid-column: 2/4;
@@ -218,7 +219,7 @@ h1 {
 
 .summary-header {
   text-align: center;
-  font-size: 16px;
+  font-size: 30px;
   font-weight: 700;
   margin-bottom: 12px;
   text-transform: uppercase;
