@@ -74,7 +74,7 @@ def save_sensor_data(sensor_id: int, data: dict):
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 sensor_id,
-                data['tanggal'],
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 round(data['tegangan'], 3),
                 round(data['arus'], 3),
                 round(data['daya'], 3),
@@ -241,8 +241,15 @@ def index_page():
 def get_realtime():
 
     now = datetime.now()
-    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = datetime.now()
+    # Awal bulan (contoh: 2025-10-01 00:00:00)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    # Akhir bulan (tanggal terakhir bulan ini)
+    if now.month == 12:
+        next_month = now.replace(year=now.year + 1, month=1, day=1)
+    else:
+        next_month = now.replace(month=now.month + 1, day=1)
+    month_end = next_month - timedelta(seconds=1)
 
     buildings_data = get_buildings_with_sensors()
     departments = []
@@ -259,14 +266,14 @@ def get_realtime():
             topic = f"sensor/{info['building_code']}/{sensor['sensor_name']}"
             sensor_data = latest_data.get(topic)
 
-            # Set fase berdasarkan nama sensor (misal pzem_r, pzem_s, pzem_t)
+            # Tentukan fase
             phase_key = sensor['sensor_name'][-1].lower() if sensor['sensor_name'][-1].lower() in ['r', 's', 't'] else sensor['sensor_name']
 
-            # Default nilai kalau belum ada data MQTT
+            # Default nilai jika belum ada data MQTT
             if not sensor_data:
-                sensor_data = {"voltage": 0, "current": 0, "power": 0, "energy": 0}
+                sensor_data = {"tegangan": 0, "arus": 0, "daya": 0, "energi": 0}
 
-            # ambil data realtime
+            # Data realtime
             phases[phase_key] = {
                 "voltage": float(sensor_data.get("tegangan", 0.0)),
                 "current": float(sensor_data.get("arus", 0.0)),
@@ -274,21 +281,25 @@ def get_realtime():
                 "energy": float(sensor_data.get("energi", 0.0))
             }
 
-            # ambil data harian dari DB
+            # Ambil data bulanan dari DB
             row = query_db("""
                 SELECT 
                     SUM(energy) as total_energy,
                     SUM(cost) as total_cost
                 FROM sensor_readings
                 WHERE sensor_id = ?
-                AND timestamp >= ? AND timestamp <= ?
-            """, (sensor['sensor_id'], today_start.strftime("%Y-%m-%d %H:%M:%S"), today_end.strftime("%Y-%m-%d %H:%M:%S")), one=True)
+                AND timestamp BETWEEN ? AND ?
+            """, (
+                sensor['sensor_id'],
+                month_start.strftime("%Y-%m-%d %H:%M:%S"),
+                month_end.strftime("%Y-%m-%d %H:%M:%S")
+            ), one=True)
 
             if row:
                 total_energy += row["total_energy"] or 0
                 total_cost += row["total_cost"] or 0
 
-        # tambahkan total departemen
+        # Total per departemen/gedung
         departments.append({
             "id": info['building_code'],
             "name": building_name,

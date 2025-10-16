@@ -36,7 +36,7 @@ function formatValue(value, metric) {
     case "voltage":
       return `${formatNumber(value)} V`;
     case "current":
-      return `${formatNumber(value)} A`;
+      return `${value.toFixed(2)} A`;
     case "power":
       return `${formatNumber(value)} kW`;
     case "energy":
