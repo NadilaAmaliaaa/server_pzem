@@ -142,7 +142,7 @@ h1 {
 
 .bar {
   flex: 1;
-  height: 4vh;
+  height: 3.5vh;
   border-radius: 5px;
   font-weight: 550;
   display: flex;
@@ -232,12 +232,29 @@ h1 {
   gap: 12px;
 }
 
+.predict-content {
+  display: grid;
+  justify-content: center;
+  gap: 12px;
+}
+
+.predict-item {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 12px;
+  border-radius: 10px;
+  width: 400px;
+  margin: 0 auto;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
 .summary-item {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   padding: 12px;
   border-radius: 10px;
   border: 2px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 5px;
 }
 
 .summary-label {
