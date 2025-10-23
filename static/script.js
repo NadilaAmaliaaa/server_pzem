@@ -210,6 +210,24 @@ async function fetchData() {
     showError("Gagal mengambil data. Akan mencoba lagi...");
   }
 }
+// Fetch summary data dari API
+async function fetchSummaryData() {
+  try {
+    const response = await fetch("/index/prediksi");
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    // console.log('Data received summary:', data);
+    document.getElementById("predict-value").textContent = `Rp ${formatNumber(data.cost_pred)}`;
+     
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    showError("Gagal mengambil data summary. Akan mencoba lagi...");
+  }
+}
 
 // Show loading indicator
 function showLoading() {
@@ -310,13 +328,14 @@ function showSuccess() {
 function startAutoRefresh() {
   // Fetch pertama kali
   fetchData();
+  fetchSummaryData();
 
   // Setup interval untuk refresh otomatis
   const intervalId = setInterval(fetchData, CONFIG.REFRESH_INTERVAL);
 
-  console.log(
-    `Auto-refresh started (every ${CONFIG.REFRESH_INTERVAL / 1000} seconds)`
-  );
+  // console.log(
+  //   `Auto-refresh started (every ${CONFIG.REFRESH_INTERVAL / 1000} seconds)`
+  // );
 
   // Return interval ID untuk bisa di-stop jika diperlukan
   return intervalId;
@@ -334,8 +353,8 @@ function stopAutoRefresh() {
 
 // Initialize ketika DOM ready
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Electricity Monitoring System initialized");
-  console.log("Configuration:", CONFIG);
+  // console.log("Electricity Monitoring System initialized");
+  // console.log("Configuration:", CONFIG);
 
   // Start fetching data
   showLoading();
@@ -377,6 +396,7 @@ document.addEventListener("visibilitychange", function () {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     fetchData,
+    fetchSummaryData,
     updateAllData,
     formatCurrency,
     formatNumber,
